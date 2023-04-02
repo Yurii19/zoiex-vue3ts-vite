@@ -55,6 +55,7 @@ const numberOfPages: any = ref(1);
 watch(inputValue, (newVal: string) => {
   clearTimeout(timeoutId);
   timeoutId = setTimeout(() => {
+    currentPage.value = 1
     getGifs(newVal);
   }, 1000);
 });
@@ -69,6 +70,7 @@ watch(gifs, (newVal: string[]) => {
 });
 
 watch(currentPage, (newVal: number) => {
+  if(newVal === 1) return
   const offset: number = (newVal - 1) * 5;
   getGifs(inputValue.value, 5, offset);
   console.log('current page is: ', newVal);
@@ -79,6 +81,7 @@ onMounted(() => {
 });
 
 function getGifs(q: string, limit: number = 5, offset: number = 0) {
+  //currentPage.value = 1;
   fetch(`${endPoint}?api_key=${API_KEY}&q=${q}&limit=${limit}&offset=${offset}`)
     .then((response) => {
       // console.log(d);
