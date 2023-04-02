@@ -30,21 +30,26 @@
   <p>
     <a href="https://giphy.com/gifs">via GIPHY</a>
   </p>
+  <div class="text-center">
+    <v-pagination
+      v-model="currentPage"
+      :length="numberOfPages"
+      rounded="circle"
+    ></v-pagination>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import { onMounted, ref, watch } from 'vue';
+import { logo, API_KEY } from '../variables.js';
 
-const API_KEY = 'FP6iXCRdSYnQlrHGySqUcQloW820c08i';
-const logo: string =
-  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_T835X5Z6ADme_fYEWOO03j7DfEjJoRjVwUtvMo8t5w&s';
 const endPoint: string = 'https://api.giphy.com/v1/gifs/search';
 
-const gifs = ref([
-  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_T835X5Z6ADme_fYEWOO03j7DfEjJoRjVwUtvMo8t5w&s',
-]);
+const gifs = ref(['']);
 const inputValue = ref('');
 var timeoutId: any;
+const currentPage: any = ref(1);
+const numberOfPages: any = ref(2);
 
 watch(inputValue, (newVal) => {
   clearTimeout(timeoutId);
@@ -59,24 +64,35 @@ watch(gifs, (newVal) => {
   }
 });
 
+watch(currentPage, (newVal) => {
+  console.log('current page is: ', newVal);
+});
+
 onMounted(() => {
   getGifs('random');
 });
 
-function getGifs(q: string, limit: number = 5) {
-  fetch(`${endPoint}?api_key=${API_KEY}&q=${q}&limit=${limit}`)
-    .then((d) => {
+function getGifs(q: string, limit: number = 5, offset: number = 0) {
+  fetch(`${endPoint}?api_key=${API_KEY}&q=${q}&limit=${limit}&offset=${offset}`)
+    .then((response) => {
       // console.log(d);
-      return d.json();
+      return response.json();
     })
     .then((response) => {
       console.log(response);
       const gifUrls = response.data.map((el: any) => el.images.original.url);
       gifs.value = gifUrls;
+      const amount = Math.floor(response.pagination.total_count / 5);
+      const remainder = response.pagination.total_count / 5;
+      //numberOfPages.value = response.pagination.total_count / ;
+      if (remainder === 0) {
+        numberOfPages.value = amount;
+      } else {
+        numberOfPages.value = amount + 1;
+      }
     })
     .catch((error) => console.error(error));
 }
-
 </script>
 
 <style scoped></style>
