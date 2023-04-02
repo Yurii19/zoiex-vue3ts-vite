@@ -49,22 +49,28 @@ const gifs = ref(['']);
 const inputValue = ref('');
 var timeoutId: any;
 const currentPage: any = ref(1);
-const numberOfPages: any = ref(2);
+const numberOfPages: any = ref(1);
+//let numberOfGifs: number = 0;
 
-watch(inputValue, (newVal) => {
+watch(inputValue, (newVal: string) => {
   clearTimeout(timeoutId);
   timeoutId = setTimeout(() => {
     getGifs(newVal);
   }, 1000);
 });
 
-watch(gifs, (newVal) => {
+watch(gifs, (newVal: string[]) => {
   if (!newVal.length) {
     getGifs('not found', 1);
+    // setTimeout(() => {
+    //   numberOfPages.value = 1;
+    // }, 1);
   }
 });
 
-watch(currentPage, (newVal) => {
+watch(currentPage, (newVal: number) => {
+  const offset: number = (newVal - 1) * 5;
+  getGifs(inputValue.value, 5, offset);
   console.log('current page is: ', newVal);
 });
 
@@ -85,6 +91,11 @@ function getGifs(q: string, limit: number = 5, offset: number = 0) {
       const amount = Math.floor(response.pagination.total_count / 5);
       const remainder = response.pagination.total_count / 5;
       //numberOfPages.value = response.pagination.total_count / ;
+      if (q === 'random') return;
+      if (q === 'not found') {
+        numberOfPages.value = 1;
+        return;
+      }
       if (remainder === 0) {
         numberOfPages.value = amount;
       } else {
