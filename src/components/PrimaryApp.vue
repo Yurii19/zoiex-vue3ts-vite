@@ -27,22 +27,12 @@
       :src="gif.url"
       @click="shareGif"
     >
-      <!-- <v-icon
-        class="share"
-        icon="mdi-share"
-        :data-title="gif.title"
-        :data-url="gif.url"
-        @click="shareGif"
-      ></v-icon
-    > -->
       <i class="share" :data-title="gif.title" :data-url="gif.url"></i>
     </v-img>
   </div>
-  <p>
-    <a href="https://giphy.com/gifs">via GIPHY</a>
-  </p>
   <div class="text-center">
     <v-pagination
+      class="my-6"
       v-model="currentPage"
       :length="numberOfPages"
       rounded="circle"
@@ -52,16 +42,19 @@
 
 <script lang="ts" setup>
 import { onMounted, ref, watch } from 'vue';
-import { logo, API_KEY, IGif } from '../variables.js';
+import { logo, API_KEY, IGif, searchEndPoint } from '../variables.js';
 
-const endPoint: string = 'https://api.giphy.com/v1/gifs/search';
+//const endPoint: string = 'https://api.giphy.com/v1/gifs/search';
 
 let gifs: any = ref([{ title: 'gif title ', url: 'gif url' }]);
 const inputValue = ref('');
 var timeoutId: any;
 const currentPage: any = ref(1);
 const numberOfPages: any = ref(1);
-//let numberOfGifs: number = 0;
+
+onMounted(() => {
+  getGifs('random');
+});
 
 watch(inputValue, (newVal: string) => {
   clearTimeout(timeoutId);
@@ -74,42 +67,31 @@ watch(inputValue, (newVal: string) => {
 watch(gifs, (newVal: IGif[]) => {
   if (!newVal.length) {
     getGifs('not found', 1);
-    // setTimeout(() => {
-    //   numberOfPages.value = 1;
-    // }, 1);
   }
 });
 
 watch(currentPage, (newVal: number) => {
-  if (newVal === 1) return;
   const offset: number = (newVal - 1) * 5;
   getGifs(inputValue.value, 5, offset);
-  console.log('current page is: ', newVal);
-});
-
-onMounted(() => {
-  getGifs('random');
 });
 
 function shareGif(ev: any) {
   const eventTargChild = ev.target.querySelector('.share');
-  console.log('evtTargChild ', eventTargChild);
   navigator.share({
-    title: 'Gif',
+    title: eventTargChild.dataset.title,
     text: eventTargChild.dataset.title,
     url: eventTargChild.dataset.url,
   });
-  //console.log('share', ev.target);
 }
 
 function getGifs(q: string, limit: number = 5, offset: number = 0) {
-  //currentPage.value = 1;
-  fetch(`${endPoint}?api_key=${API_KEY}&q=${q}&limit=${limit}&offset=${offset}`)
+  fetch(
+    `${searchEndPoint}?api_key=${API_KEY}&q=${q}&limit=${limit}&offset=${offset}`
+  )
     .then((response) => {
       return response.json();
     })
     .then((response) => {
-      console.log(response);
       const gifUrls: IGif[] = response.data.map((el: any) => ({
         title: el.title,
         url: el.images.original.url,
@@ -117,29 +99,15 @@ function getGifs(q: string, limit: number = 5, offset: number = 0) {
       gifs.value = gifUrls;
       const amount = Math.floor(response.pagination.total_count / 5);
       const remainder = response.pagination.total_count / 5;
-      //numberOfPages.value = response.pagination.total_count / ;
       if (q === 'random') return;
       if (q === 'not found') {
         numberOfPages.value = 1;
         return;
       }
-      if (remainder === 0) {
-        numberOfPages.value = amount;
-      } else {
-        numberOfPages.value = amount + 1;
-      }
+      numberOfPages.value = remainder === 0 ? amount : amount + 1;
     })
     .catch((error) => console.error(error));
 }
 </script>
 
-<style scoped>
-.share {
-  /* background-color: black;
-  color: white;
-  border-radius: 50%;
-  padding: 15px;
-  cursor: pointer;
-  border: 2px solid white; */
-}
-</style>
+<style scoped></style>
