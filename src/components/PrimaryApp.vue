@@ -44,8 +44,6 @@
 import { onMounted, ref, watch } from 'vue';
 import { logo, API_KEY, IGif, searchEndPoint } from '../variables.js';
 
-//const endPoint: string = 'https://api.giphy.com/v1/gifs/search';
-
 let gifs: any = ref([{ title: 'gif title ', url: 'gif url' }]);
 const inputValue = ref('');
 var timeoutId: any;
