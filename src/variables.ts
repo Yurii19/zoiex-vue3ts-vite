@@ -7,3 +7,5 @@ export interface IGif {
   title: string;
   url: string;
 }
+
+export const searchEndPoint: string = 'https://api.giphy.com/v1/gifs/search';
